@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Tasas de Interés</title>
+    <style>
+        /* Estilos generales */
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background: #f4f7fc;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #1a3a5c;
+            margin-top: 0;
+        }
+        .form-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-end;
+            margin-bottom: 20px;
+            background: #eef3f9;
+            padding: 20px;
+            border-radius: 12px;
+        }
+        .field {
+            flex: 1 1 180px;
+            display: flex;
+            flex-direction: column;
+        }
+        .field label {
+            font-weight: 600;
+            color: #1a3a5c;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        .field input, .field select {
+            padding: 10px 12px;
+            border: 1px solid #bdd3e8;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+        .field input:focus, .field select:focus {
+            outline: none;
+            border-color: #2a6b9e;
+            box-shadow: 0 0 0 3px rgba(42,107,158,0.2);
+        }
+        .btn-calcular {
+            background: #1a3a5c;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            align-self: center;
+        }
+        .btn-calcular:hover {
+            background: #0f2a44;
+            transform: scale(1.02);
+        }
+        /* Tabla de resultados */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+        th {
+            background: #1a3a5c;
+            color: white;
+            padding: 12px 8px;
+            text-align: center;
+        }
+        td {
+            padding: 12px 8px;
+            text-align: center;
+            border-bottom: 1px solid #dde7f0;
+        }
+        tr:hover {
+            background: #f0f6fe;
+        }
+        .banco-nombre {
+            font-weight: 600;
+            color: #1a3a5c;
+        }
+        .tasa {
+            color: #0f7b3a;
+            font-weight: 600;
+        }
+        .cuota {
+            font-weight: 700;
+            color: #b22234;
+        }
+        .no-data {
+            text-align: center;
+            color: #6c7a8a;
+            padding: 30px;
+            font-style: italic;
+        }
+        /* Anuncios */
+        .ads-placeholder {
+            background: #e9ecef;
+            border: 2px dashed #adb5bd;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            color: #495057;
+            margin: 20px 0;
+            font-size: 0.9rem;
+        }
+        .ads-placeholder p {
+            margin: 5px 0;
+        }
+        /* Botón contacto */
+        .btn-contacto {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 14px 35px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            margin: 10px 0 20px;
+            display: inline-block;
+        }
+        .btn-contacto:hover {
+            background: #1e7e34;
+            transform: scale(1.03);
+        }
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px 35px;
+            border-radius: 20px;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+            position: relative;
+            animation: modalSlide 0.3s ease;
+        }
+        @keyframes modalSlide {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-close {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #6c757d;
+            transition: 0.2s;
+        }
+        .modal-close:hover {
+            color: #dc3545;
+        }
+        .modal h2 {
+            margin-top: 0;
+            color: #1a3a5c;
+        }
+        .modal .field {
+            flex: 1 1 100%;
+            margin-bottom: 15px;
+        }
+        .modal .field input {
+            width: 100%;
+        }
+        .modal .btn-enviar {
+            background: #1a3a5c;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 30px;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 1rem;
+        }
+        .modal .btn-enviar:hover {
+            background: #0f2a44;
+        }
+        .mensaje-exito {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+        footer {
+            text-align: center;
+            color: #6c7a8a;
+            font-size: 0.8rem;
+            margin-top: 25px;
+            border-top: 1px solid #dde7f0;
+            padding-top: 15px;
+        }
+        @media (max-width: 600px) {
+            .form-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .btn-calcular {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <h1>🏦 Calculadora de Tasas de Interés</h1>
+        <p style="text-align:center; color:#4a5b6e;">Compara las cuotas mensuales de diferentes bancos según el tipo de crédito</p>
+
+        <!-- Formulario de entrada -->
+        <div class="form-group">
+            <div class="field">
+                <label for="monto">Monto (COP)</label>
+                <input type="number" id="monto" value="10000000" step="100000" min="0">
+            </div>
+            <div class="field">
+                <label for="plazo">Plazo (meses)</label>
+                <input type="number" id="plazo" value="24" step="1" min="1">
+            </div>
+            <div class="field">
+                <label for="tipoCredito">Tipo de crédito</label>
+                <select id="tipoCredito">
+                    <option value="vivienda">Vivienda</option>
+                    <option value="libre_inversion" selected>Libre inversión</option>
+                    <option value="vehiculo">Compra de vehículo</option>
+                    <option value="tarjeta">Tarjeta de crédito</option>
+                    <option value="educativo">Educativo</option>
+                </select>
+            </div>
+            <button class="btn-calcular" id="calcularBtn">Calcular</button>
+        </div>
+
+        <!-- Espacio para anuncios (ejemplo) -->
+        <div class="ads-placeholder">
+            <p>📢 <strong>Espacio para anuncios</strong></p>
+            <p>Aquí puedes insertar tu código de Google AdSense o cualquier otro.</p>
+        </div>
+
+        <!-- Resultados -->
+        <h2>📊 Comparativa de bancos</h2>
+        <div class="table-wrapper">
+            <table id="resultadosTabla">
+                <thead>
+                    <tr>
+                        <th>Banco</th>
+                        <th>Tasa Nominal Anual (TNA)</th>
+                        <th>Cuota mensual (COP)</th>
+                    </tr>
+                </thead>
+                <tbody id="resultadosBody">
+                    <tr><td colspan="3" class="no-data">Ingresa los datos y presiona "Calcular"</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Botón contacto -->
+        <div style="text-align: center;">
+            <button class="btn-contacto" id="contactoBtn">📩 Dejanos tu contacto</button>
+        </div>
+
+        <footer>
+            <p>Los datos de contacto se almacenan localmente para fines comerciales. Al enviar aceptas nuestra política de privacidad.</p>
+        </footer>
+    </div>
+
+    <!-- Modal de contacto -->
+    <div class="modal" id="contactoModal">
+        <div class="modal-content">
+            <span class="modal-close" id="modalClose">&times;</span>
+            <h2>📋 Déjanos tus datos</h2>
+            <p style="color:#4a5b6e;">Un asesor se pondrá en contacto contigo para ofrecerte la mejor opción.</p>
+            <div class="field">
+                <label for="contactoNombre">Nombre completo</label>
+                <input type="text" id="contactoNombre" placeholder="Ej: Juan Pérez">
+            </div>
+            <div class="field">
+                <label for="contactoTelefono">Teléfono</label>
+                <input type="tel" id="contactoTelefono" placeholder="321 123 4567">
+            </div>
+            <div class="field">
+                <label for="contactoEmail">Correo electrónico</label>
+                <input type="email" id="contactoEmail" placeholder="juan@email.com">
+            </div>
+            <button class="btn-enviar" id="enviarContacto">Enviar</button>
+            <div class="mensaje-exito" id="mensajeExito">✅ ¡Gracias! Tus datos han sido guardados.</div>
+        </div>
+    </div>
+
+    <script>
+        // ------------------------------------------------------------
+        // 1. DATOS DE BANCOS Y TASAS POR TIPO DE CRÉDITO
+        //    (Tasa Nominal Anual en %)
+        //    Puedes agregar, quitar o modificar bancos y tasas libremente.
+        // ------------------------------------------------------------
+        const bancosData = {
+            vivienda: {
+                'Bancolombia': 11.5,
+                'Davivienda': 10.8,
+                'BBVA': 12.0,
+                'Banco de Bogotá': 10.5,
+                'Citibank': 11.0,
+            },
+            libre_inversion: {
+                'Bancolombia': 16.2,
+                'Davivienda': 15.5,
+                'BBVA': 17.0,
+                'Banco de Bogotá': 15.0,
+                'Citibank': 16.8,
+                'Banco Falabella': 14.9,
+            },
+            vehiculo: {
+                'Bancolombia': 13.0,
+                'Davivienda': 12.4,
+                'BBVA': 13.8,
+                'Banco de Bogotá': 12.0,
+                'Citibank': 12.9,
+            },
+            tarjeta: {
+                'Bancolombia': 28.5,
+                'Davivienda': 27.0,
+                'BBVA': 29.0,
+                'Banco de Bogotá': 26.5,
+                'Citibank': 27.8,
+            },
+            educativo: {
+                'Bancolombia': 9.0,
+                'Davivienda': 8.5,
+                'BBVA': 9.5,
+                'Banco de Bogotá': 8.0,
+                'Citibank': 8.8,
+            }
+        };
+
+        // ------------------------------------------------------------
+        // 2. FUNCIÓN PARA CALCULAR CUOTA MENSUAL (método francés)
+        //    Fórmula: Cuota = P * (i * (1+i)^n) / ((1+i)^n - 1)
+        //    donde i = tasa mensual (TNA/12/100), n = plazo en meses
+        // ------------------------------------------------------------
+        function calcularCuota(monto, plazoMeses, tasaAnual) {
+            const i = tasaAnual / 12 / 100; // tasa mensual decimal
+            if (i === 0) return monto / plazoMeses;
+            const factor = Math.pow(1 + i, plazoMeses);
+            return monto * (i * factor) / (factor - 1);
+        }
+
+        // ------------------------------------------------------------
+        // 3. FUNCIÓN PRINCIPAL PARA ACTUALIZAR LA TABLA
+        // ------------------------------------------------------------
+        function actualizarResultados() {
+            const monto = parseFloat(document.getElementById('monto').value);
+            const plazo = parseInt(document.getElementById('plazo').value);
+            const tipo = document.getElementById('tipoCredito').value;
+
+            // Validaciones básicas
+            if (isNaN(monto) || monto <= 0) {
+                alert('Por favor ingresa un monto válido mayor a 0.');
+                return;
+            }
+            if (isNaN(plazo) || plazo < 1) {
+                alert('El plazo debe ser al menos 1 mes.');
+                return;
+            }
+
+            const bancos = bancosData[tipo];
+            if (!bancos) {
+                alert('No hay datos para este tipo de crédito.');
+                return;
+            }
+
+            const tbody = document.getElementById('resultadosBody');
+            tbody.innerHTML = '';
+
+            // Recorrer cada banco y calcular cuota
+            for (const [nombreBanco, tasa] of Object.entries(bancos)) {
+                const cuota = calcularCuota(monto, plazo, tasa);
+                const fila = document.createElement('tr');
+                fila.innerHTML = `
+                    <td class="banco-nombre">${nombreBanco}</td>
+                    <td class="tasa">${tasa.toFixed(2)}%</td>
+                    <td class="cuota">${cuota.toFixed(0)}</td>
+                `;
+                tbody.appendChild(fila);
+            }
+
+            // Si no hay filas, mostrar mensaje
+            if (tbody.children.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="no-data">No hay bancos disponibles para este tipo.</td></tr>';
+            }
+        }
+
+        // ------------------------------------------------------------
+        // 4. EVENTOS: Calcular al hacer clic y también automático
+        // ------------------------------------------------------------
+        document.getElementById('calcularBtn').addEventListener('click', actualizarResultados);
+
+        // Automático al cambiar cualquier input/select (opcional)
+        document.getElementById('monto').addEventListener('input', actualizarResultados);
+        document.getElementById('plazo').addEventListener('input', actualizarResultados);
+        document.getElementById('tipoCredito').addEventListener('change', actualizarResultados);
+
+        // Cargar resultados al iniciar (con valores por defecto)
+        window.addEventListener('DOMContentLoaded', actualizarResultados);
+
+        // ------------------------------------------------------------
+        // 5. MODAL DE CONTACTO
+        // ------------------------------------------------------------
+        const modal = document.getElementById('contactoModal');
+        const btnContacto = document.getElementById('contactoBtn');
+        const btnCerrar = document.getElementById('modalClose');
+
+        function abrirModal() {
+            modal.classList.add('active');
+            document.getElementById('mensajeExito').style.display = 'none';
+            // Limpiar campos (opcional)
+            // document.getElementById('contactoNombre').value = '';
+            // document.getElementById('contactoTelefono').value = '';
+            // document.getElementById('contactoEmail').value = '';
+        }
+
+        function cerrarModal() {
+            modal.classList.remove('active');
+        }
+
+        btnContacto.addEventListener('click', abrirModal);
+        btnCerrar.addEventListener('click', cerrarModal);
+        // Cerrar al hacer clic fuera del contenido
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) cerrarModal();
+        });
+
+        // ------------------------------------------------------------
+        // 6. GUARDAR CONTACTO EN LOCALSTORAGE
+        // ------------------------------------------------------------
+        document.getElementById('enviarContacto').addEventListener('click', function() {
+            const nombre = document.getElementById('contactoNombre').value.trim();
+            const telefono = document.getElementById('contactoTelefono').value.trim();
+            const email = document.getElementById('contactoEmail').value.trim();
+
+            if (!nombre || !telefono || !email) {
+                alert('Por favor completa todos los campos.');
+                return;
+            }
+
+            // Crear objeto contacto
+            const contacto = {
+                nombre,
+                telefono,
+                email,
+                fecha: new Date().toISOString(),
+                tipoCredito: document.getElementById('tipoCredito').value,
+                monto: document.getElementById('monto').value,
+                plazo: document.getElementById('plazo').value,
+            };
+
+            // Obtener contactos existentes o crear array
+            let contactos = JSON.parse(localStorage.getItem('contactos')) || [];
+            contactos.push(contacto);
+            localStorage.setItem('contactos', JSON.stringify(contactos));
+
+            // Mostrar mensaje de éxito
+            document.getElementById('mensajeExito').style.display = 'block';
+
+            // Opcional: limpiar campos después de unos segundos o cerrar modal
+            setTimeout(() => {
+                cerrarModal();
+                // También puedes limpiar campos si quieres
+                // document.getElementById('contactoNombre').value = '';
+                // document.getElementById('contactoTelefono').value = '';
+                // document.getElementById('contactoEmail').value = '';
+            }, 2000);
+        });
+
+        // ------------------------------------------------------------
+        // 7. (OPCIONAL) FUNCIÓN PARA EXPORTAR CONTACTOS (para uso futuro)
+        //    Puedes abrir la consola y ejecutar:
+        //    console.log(JSON.parse(localStorage.getItem('contactos')));
+        // ------------------------------------------------------------
+        console.log('💡 Los contactos se guardan en localStorage. Para verlos escribe: JSON.parse(localStorage.getItem("contactos"))');
+    </script>
+</body>
+</html>
